@@ -6,55 +6,52 @@
 //  Copyright © 2017年 Seven Tsai. All rights reserved.
 //
 
-
-
 ///////////**********開揪團頁面
+
 import UIKit
 
-
 //因委託給自己所以要加  UIPickerViewDelegate, UIPickerViewDataSource
-class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource {
-//    @IBOutlet weak var pickerClass: UIPickerView!
-    @IBOutlet weak var textFieldSubject: UITextField!
-    @IBOutlet weak var imgViewSubject: UIImageView!
-    @IBOutlet weak var classLabel: UILabel!
-    @IBOutlet weak var classTextField: UITextField!
-    @IBOutlet weak var LabelStartTime: UILabel!
-    @IBOutlet weak var LabelEndTime: UILabel!
+class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
+    @IBOutlet var imgViewSubject: UIImageView!
+
+    @IBOutlet weak var btnPicOutlet: UIButton!
     @IBOutlet weak var textFieldStartDate: UITextField!
     @IBOutlet weak var textFieldEndDate: UITextField!
+    @IBOutlet weak var textFieldSubject: UITextField!
+    @IBOutlet weak var classLabel: UILabel!
+
+    @IBOutlet weak var classTextField: UITextField!
     @IBOutlet weak var textViewDetail: UITextView!
-
+    
+    
+    
     var listClass = [String]()  //class list的空陣列
-
+    
     var selectClass:String?  //class select的資料儲存
-
+    
     var formatter: DateFormatter! = nil
     var formatter2: DateFormatter! = nil
-
+    
     var subject:String?
     var location:String?
     var starttime:String?
     var endtime:String?
     var classType:String?
     var detail:String?
-    var subjectpic:String?
+    var subjectpicString:String?
     
+    //會員id
+    var mid:String?
+//    var imgTaken:UIImage?
+    var imgDataBase64String:String?
+    
+    
+ 
   
-   
     
-    
-    
-    
-    
-    
-    
-    
-    
-    /////////submit
+    /////////submit按鈕
+
     @IBAction func submit(_ sender: Any) {
-        
-        
         
         subject = textFieldSubject.text
         location = "我家"
@@ -62,11 +59,11 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         if detail == nil {
             detail = "I'mDetail"
         }else{
-                    detail = textViewDetail.text
+            detail = textViewDetail.text
         }
-
         
-        subjectpic = "nopic"
+        
+        subjectpicString = imgDataBase64String
         
         
         print(subject!)
@@ -75,12 +72,20 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         print(endtime!)
         print(classType!)
         print(detail!)
-        print(subjectpic!)
+//        print(subjectpicString!)
         
-        let url = URL(string: "https://together-seventsai.c9users.io/opentSubject.php")
+        
+        
+        
+        
+        
+        
+        
+        
+        let url = URL(string: "https://together-seventsai.c9users.io/openSubject.php")
         let session = URLSession(configuration: .default)
         var req = URLRequest(url: url!)
-        req.httpBody = "subject=\(subject!)&location=\(location!)&starttime=\(starttime!)&endtime=\(endtime!)&class=\(classType!)&detail=\(detail!)&subjectpic=\(subjectpic!)".data(using: .utf8)
+        req.httpBody = "mid=\(mid!)&subject=\(subject!)&location=\(location!)&starttime=\(starttime!)&endtime=\(endtime!)&class=\(classType!)&detail=\(detail!)&data=\(subjectpicString!)".data(using: .utf8)
         req.httpMethod = "POST"
         
         
@@ -90,26 +95,207 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
             if error == nil {
                 
                 print("add success")
-                
+                print(data)
                 
             }else{ print(error)}
             
             
         })
         
-        
-        
+        task.resume()
         
     }
     
-
     
-   
+    ////拍照按鈕
+
+    @IBAction func btnTakePic(_ sender: AnyObject) {
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        let cameraAction = UIAlertAction(title: "使用相機", style: .default, handler: {(action) in
+            openCamera()
+        })
+        let libraryAction = UIAlertAction(title: "使用相簿", style: .default, handler: {(action) in
+            openLibrary()
+            
+        })
+        let cancelAction = UIAlertAction(title: "取消", style: .destructive, handler: {(action) in
+            self.dismiss(animated: true, completion: nil)
+        })
+        
+        
+        alertController.addAction(cameraAction)
+        alertController.addAction(libraryAction)
+        alertController.addAction(cancelAction)
+        
+        
+        if let popoverController = alertController.popoverPresentationController {
+            popoverController.sourceView = view as? UIView
+            popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.maxY, width: 0, height: 0)
+            
+        }
+        
+        self.present(alertController, animated: true, completion: nil)
+        
+        
+        
+        //相機拍照function
+        
+        func openCamera(){
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                
+                let imgPickerTakeVC = UIImagePickerController()
+                imgPickerTakeVC.sourceType = .camera
+                imgPickerTakeVC.delegate = self
+                
+                show(imgPickerTakeVC, sender: self)
+                
+            }
+    }
+    
+        //取library function
+        func openLibrary(){
+            let imgPickGetVC = UIImagePickerController()
+            imgPickGetVC.sourceType = .photoLibrary
+            imgPickGetVC.delegate = self
+            
+            //規定要跳出(ipad需要)
+            
+            if let popoverController = alertController.popoverPresentationController {
+                popoverController.sourceView = view as? UIView
+                popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
+                
+            }
+            present(imgPickGetVC, animated: true, completion: nil)
+    
+            
+            //        imgPickGetVC.modalPresentationStyle = .popover
+            //        let popover = imgPickGetVC.popoverPresentationController
+            //        popover?.sourceView = self.view as? UIView
+            //
+            //        popover?.sourceRect = self.view.bounds
+            //        popover?.permittedArrowDirections = .any
+            //
+            //        show(imgPickGetVC, sender: self)
+            
+            
+        }
+        
+    }
+    
+    //拍照finish 實作
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        print("mid:\(mid!)")
+        
+        
+        let imgTaken = info[UIImagePickerControllerOriginalImage] as! UIImage
+        imgViewSubject.image = imgTaken
+        
+        //        imgViewSubject.image = imgTaken
+        
+        //將UIImage 變為 jpeg   即為data
+        let imgData = UIImageJPEGRepresentation(imgTaken, 0.3)
+        
+        
+        
+        
+        
+        
+        let imgDataBase64 =  imgData?.base64EncodedData()
+        //將imgData 轉為base64字串
+         imgDataBase64String = imgData?.base64EncodedString()
+        
+      
+
+//                    print("aaaaaaa\(imgDataBase64)")
+        
+//        print("bbbbbbbbbb\(imgDataBase64String!)")
+        
+        
+        
+//            print(imgDataBase64String)
+        
+//        let url = URL(string: "https://together-seventsai.c9users.io/savePhoto.php")
+//        //
+//        let session = URLSession(configuration: .default)
+//        var req = URLRequest(url: url!)
+//        // 將base64字串以字串形式傳到後端
+//        req.httpBody = "mid=\(mid!)&data=\(imgDataBase64String!)".data(using: .utf8)
+//        req.httpMethod = "POST"
+//        
+//        let task = session.dataTask(with: req, completionHandler: {(data,response,error) in
+//            if error != nil{
+//                print(data)
+//                print(response)
+//            }
+//            
+//        })
+//        
+//        
+//        
+//        
+//        task.resume()
+        
+        
+        
+        
+        //順便存為相簿圖檔
+        //       let imgInLib = UIImageWriteToSavedPhotosAlbum(imgTaken, nil, nil, nil)
+        
+        
+        
+        //將相片儲存到雲端
+        
+        //https://together-seventsai.c9users.io/photo/groupimg/
+        
+        //時間
+//        let interval = Date.timeIntervalSinceReferenceDate
+        //                let docDir = NSHomeDirectory() + "/Documents"
+        
+        //        let imgRelativePath = "/saveimg/\(app.account!)_\(interval).jpg"
+        
+        //圖片的命名(其路徑含名稱)
+        //        let imgFile = "\(docDir)\(imgRelativePath)"
+        //        print("imgFile:\(imgFile)")
+        //pathString to url
+        //        let urlFilePath = URL(fileURLWithPath: imgFile)
+        
+        //        var account = "account1"
+        //        var groupid = "gid1"
+        //
+        //        let c9Path = "https://together-seventsai.c9users.io/photo/groupimg/"
+        //        let imgFilePath = "\(c9Path)\(account)_\(groupid)_\(interval).jpg"
+        //
+        //        let urlImgFilePath = URL(fileURLWithPath: imgFilePath)
+        //        print(urlImgFilePath)
+        //
+        //        do {
+        //            //將data 存下來
+        //
+        //
+        //            try data?.write(to: urlImgFilePath)
+        //
+        //            print("save ok")
+        //        }catch {
+        //            print(error)
+        //        }
+        
+ 
+        dismiss(animated: true, completion: nil)
+        
+    }
+    
+    //拍照cancel 實作
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    
+    
     
     
     // class Picker API。建構一個classPicker
     func setClassPicker(array:Array<String>){
-    
+        
         ////////////class PickerView 用
         //實作一個pickerView 出來
         let myPickerView = UIPickerView()
@@ -123,7 +309,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         classTextField.inputView = myPickerView
         
         
-       let array = array
+        let array = array
         
         //預設text為
         classTextField.text = array[0]
@@ -207,7 +393,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         myDatePicker.datePickerMode = .dateAndTime
         
         //時區
-                myDatePicker.locale = Locale(identifier: "zh_TW")
+        myDatePicker.locale = Locale(identifier: "zh_TW")
         
         //預設日期
         
@@ -223,7 +409,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         textField.text = formatter.string(from: myDatePicker.date)
         
         textField.tag = 200
-    
+        
         
         //讓變數starttime 取得改變後的值 以利後續傳值至後端
         starttime = textField.text!
@@ -239,19 +425,19 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         
         //指定tag
         let textField = self.view.viewWithTag(200) as? UITextField
-//        let textField2 = self.view.viewWithTag(300) as? UITextField
+        //        let textField2 = self.view.viewWithTag(300) as? UITextField
         
         //改變日期時 文字也改變
         textField?.text = formatter.string(for: datePicker.date)
-//        textField2?.text = formatter2.string(from: datePicker.date)
+        //        textField2?.text = formatter2.string(from: datePicker.date)
         //        starttime = textField?.text
         
         //讓變數starttime 取得改變後的值 以利後續傳值至後端
         starttime = textField?.text!
-
+        
     }
     
-  
+    
     
     
     
@@ -279,7 +465,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         myDatePicker2.datePickerMode = .dateAndTime
         
         //時區
-                myDatePicker2.locale = Locale(identifier: "zh_TW")
+        myDatePicker2.locale = Locale(identifier: "zh_TW")
         
         //預設日期
         
@@ -298,7 +484,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         
         
         //讓變數endtime 取得改變後的值 以利後續傳值至後端
-                endtime = textField2.text!
+        endtime = textField2.text!
     }
     
     
@@ -316,7 +502,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         //        starttime = textField?.text
         
         //讓變數endtime 取得改變後的值 以利後續傳值至後端
-
+        
         endtime = textField2?.text
     }
     
@@ -333,42 +519,59 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         self.view.endEditing(true)
     }
 
-
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-
-        let fullScreenSize = UIScreen.main.bounds.size
-
         
+        let app = UIApplication.shared.delegate as! AppDelegate
+        if app.id == nil {
+            mid = "0"
+        }else {
+        mid = app.id
+        }
+        
+        
+        
+        //        let imgBtn = UIImage(named: "cat.png")
+        //
+        //        btnPicOutlet.setImage(imgBtn, for: .normal)
+        
+        
+        //取得screenSize 似乎沒用到
+        let fullScreenSize = UIScreen.main.bounds.size
+        
+        
+        
+        //class的選擇清單
         listClass.append("美食")
         listClass.append("運動")
         listClass.append("旅遊")
         listClass.append("團康")
         listClass.append("其他")
-
+        
         ////////////class PickerView 用
         setClassPicker(array: listClass)
         
-        //startdate picker  參數為 要作為點選的textfield 與  要紀錄的變數
+        //startdate picker API  參數為 要作為點選的textfield 與  要紀錄的變數 此為textFieldStartDate這個textField(storyboard拉的)
+        
         
         setStartDatePicker(textField: textFieldStartDate)
-        //enddate picker
+        //enddate picker API
         setEndDatePicker(textField: textFieldEndDate)
         
         
         
         /////////點擊空白返回鍵盤(被我們改為picker了)
-
+        
         let tapBack = UITapGestureRecognizer(target: self, action: #selector(hideKeyborad(tapG:)))
         
-       
+        
         tapBack.cancelsTouchesInView = false
         
         self.view.addGestureRecognizer(tapBack)
         
-          }
+            }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
