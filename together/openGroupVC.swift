@@ -12,8 +12,8 @@ import UIKit
 
 //因委託給自己所以要加  UIPickerViewDelegate, UIPickerViewDataSource
 class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSource, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-    @IBOutlet var imgViewSubject: UIImageView!
 
+    @IBOutlet weak var imgViewSbj: UIImageView!
     @IBOutlet weak var btnPicOutlet: UIButton!
     @IBOutlet weak var textFieldStartDate: UITextField!
     @IBOutlet weak var textFieldEndDate: UITextField!
@@ -22,7 +22,6 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
 
     @IBOutlet weak var classTextField: UITextField!
     @IBOutlet weak var textViewDetail: UITextView!
-    
     
     
     var listClass = [String]()  //class list的空陣列
@@ -42,15 +41,15 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
     
     //會員id
     var mid:String?
-//    var imgTaken:UIImage?
+    //    var imgTaken:UIImage?
     var imgDataBase64String:String?
     
     
- 
-  
+    
+    
     
     /////////submit按鈕
-
+    
     @IBAction func submit(_ sender: Any) {
         
         subject = textFieldSubject.text
@@ -72,7 +71,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         print(endtime!)
         print(classType!)
         print(detail!)
-//        print(subjectpicString!)
+        //        print(subjectpicString!)
         
         
         
@@ -82,7 +81,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         
         
         
-        let url = URL(string: "https://together-seventsai.c9users.io/openSubject.php")
+        let url = URL(string: "https://together-seventsai.c9users.io/openGroup.php")
         let session = URLSession(configuration: .default)
         var req = URLRequest(url: url!)
         req.httpBody = "mid=\(mid!)&subject=\(subject!)&location=\(location!)&starttime=\(starttime!)&endtime=\(endtime!)&class=\(classType!)&detail=\(detail!)&data=\(subjectpicString!)".data(using: .utf8)
@@ -108,7 +107,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
     
     
     ////拍照按鈕
-
+    
     @IBAction func btnTakePic(_ sender: AnyObject) {
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         let cameraAction = UIAlertAction(title: "使用相機", style: .default, handler: {(action) in
@@ -150,8 +149,8 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
                 show(imgPickerTakeVC, sender: self)
                 
             }
-    }
-    
+        }
+        
         //取library function
         func openLibrary(){
             let imgPickGetVC = UIImagePickerController()
@@ -166,7 +165,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
                 
             }
             present(imgPickGetVC, animated: true, completion: nil)
-    
+            
             
             //        imgPickGetVC.modalPresentationStyle = .popover
             //        let popover = imgPickGetVC.popoverPresentationController
@@ -186,54 +185,55 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         print("mid:\(mid!)")
         
-        
         let imgTaken = info[UIImagePickerControllerOriginalImage] as! UIImage
-        imgViewSubject.image = imgTaken
         
-        //        imgViewSubject.image = imgTaken
+        
+        imgViewSbj.image = imgTaken
+        
+        
+        
         
         //將UIImage 變為 jpeg   即為data
         let imgData = UIImageJPEGRepresentation(imgTaken, 0.3)
         
         
         
-        
-        
+      
         
         let imgDataBase64 =  imgData?.base64EncodedData()
         //將imgData 轉為base64字串
-         imgDataBase64String = imgData?.base64EncodedString()
-        
-      
-
-//                    print("aaaaaaa\(imgDataBase64)")
-        
-//        print("bbbbbbbbbb\(imgDataBase64String!)")
+        imgDataBase64String = imgData?.base64EncodedString()
         
         
         
-//            print(imgDataBase64String)
+        //                    print("aaaaaaa\(imgDataBase64)")
         
-//        let url = URL(string: "https://together-seventsai.c9users.io/savePhoto.php")
-//        //
-//        let session = URLSession(configuration: .default)
-//        var req = URLRequest(url: url!)
-//        // 將base64字串以字串形式傳到後端
-//        req.httpBody = "mid=\(mid!)&data=\(imgDataBase64String!)".data(using: .utf8)
-//        req.httpMethod = "POST"
-//        
-//        let task = session.dataTask(with: req, completionHandler: {(data,response,error) in
-//            if error != nil{
-//                print(data)
-//                print(response)
-//            }
-//            
-//        })
-//        
-//        
-//        
-//        
-//        task.resume()
+        //        print("bbbbbbbbbb\(imgDataBase64String!)")
+        
+        
+        
+        //            print(imgDataBase64String)
+        
+        //        let url = URL(string: "https://together-seventsai.c9users.io/savePhoto.php")
+        //        //
+        //        let session = URLSession(configuration: .default)
+        //        var req = URLRequest(url: url!)
+        //        // 將base64字串以字串形式傳到後端
+        //        req.httpBody = "mid=\(mid!)&data=\(imgDataBase64String!)".data(using: .utf8)
+        //        req.httpMethod = "POST"
+        //
+        //        let task = session.dataTask(with: req, completionHandler: {(data,response,error) in
+        //            if error != nil{
+        //                print(data)
+        //                print(response)
+        //            }
+        //
+        //        })
+        //
+        //
+        //
+        //
+        //        task.resume()
         
         
         
@@ -248,7 +248,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         //https://together-seventsai.c9users.io/photo/groupimg/
         
         //時間
-//        let interval = Date.timeIntervalSinceReferenceDate
+        //        let interval = Date.timeIntervalSinceReferenceDate
         //                let docDir = NSHomeDirectory() + "/Documents"
         
         //        let imgRelativePath = "/saveimg/\(app.account!)_\(interval).jpg"
@@ -279,7 +279,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         //            print(error)
         //        }
         
- 
+        
         dismiss(animated: true, completion: nil)
         
     }
@@ -518,7 +518,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         
         self.view.endEditing(true)
     }
-
+    
     
     
     override func viewDidLoad() {
@@ -528,7 +528,7 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         if app.id == nil {
             mid = "0"
         }else {
-        mid = app.id
+            mid = app.id
         }
         
         
@@ -571,22 +571,21 @@ class openGroupVC: UIViewController, UIPickerViewDelegate, UIPickerViewDataSourc
         
         self.view.addGestureRecognizer(tapBack)
         
-            }
-
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-
+    
     /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+     // MARK: - Navigation
+     
+     // In a storyboard-based application, you will often want to do a little preparation before navigation
+     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+     // Get the new view controller using segue.destinationViewController.
+     // Pass the selected object to the new view controller.
+     }
+     */
 }
